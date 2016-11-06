@@ -1,9 +1,16 @@
 import cocos as cs
 import pyglet
-from cocos.actions import FadeOut, WrappedMove
+from cocos.actions import FadeOut, WrappedMove, Delay, FadeIn
 from cocos.menu import MenuItem
 from cocos.director import director
+from cocos.scenes import FadeTransition
 
+from cocos.audio.pygame.mixer import Sound
+from cocos.audio.pygame import mixer
+
+class Audio(Sound):
+    def __init__(self, file):
+        super().__init__(file)
 
 class NewGame(cs.scene.Scene):
     class IntroLayer(cs.layer.Layer):
@@ -13,8 +20,16 @@ class NewGame(cs.scene.Scene):
             text = cs.text.Label("A long time ago...", font_name="Arial", font_size=20, anchor_x="center",
                                  anchor_y="center")
             text.position = window_size[0] / 2, window_size[1] - 100
-            text.do(FadeOut(1))
+            text.opacity = 0
+            text.do(Delay(1) + FadeIn(1) + Delay(2) + FadeOut(2))
             self.add(text)
+
+    class NewCharacterScene(cs.scene.Scene):
+        def __init__(self, window_size):
+            super().__init__()
+            self.window_size = window_size
+            creation = cs.text.Label("Character Creation", font_name="Arial", font_size=30, anchor_x="center", anchor_y="center")
+            creation.position = window_size[0] / 2, window_size[1] - 50
 
     def __init__(self):
         super().__init__()
@@ -29,11 +44,18 @@ class MainMenu(cs.scene.Scene):
             options = []
             options.append(MenuItem("New Game", self.new_game))
             options.append(MenuItem("Quit", self.on_quit))
+
+            self.font_item['font_size'] = 20
+            self.font_item['color'] = (200, 200, 200, 255)
+
+            self.font_item_selected['font_size'] = 25
+            self.font_item_selected['color'] = (155, 0, 0, 255)
+
             self.create_menu(options)
 
         def new_game(self):
             new_game = NewGame()
-            cs.director.director.replace(new_game)
+            cs.director.director.run(FadeTransition(new_game))
 
         def on_quit(self):
             self.get_ancestor(cs.scene.Scene).end()
@@ -59,6 +81,9 @@ class MainMenu(cs.scene.Scene):
         bg.position = self.window_size[0] / 2, self.window_size[1] / 2
         self.add(bg)
 
+        song = Audio("assets/menu.ogg")
+        song.play(-1)
+
         clouds = self.CloudLayer(self.window_size)
         self.add(clouds)
 
@@ -75,5 +100,6 @@ if __name__ == "__main__":
     pyglet.resource.path.append('.')
     pyglet.resource.reindex()
     director.init(width=600, height=480)
+    mixer.init()
     main_menu = MainMenu()
     director.run(main_menu)
