@@ -37,8 +37,6 @@ class CharacterCreate(cs.scene.Scene):
             self.modifiers = set()
             self.count = 0
             self.pressing = True
-            self.holding = False
-            self.held_time = 0
 
         def on_key_press(self, key, modifiers):
             """
@@ -51,24 +49,15 @@ class CharacterCreate(cs.scene.Scene):
             self.keys_pressed[pyglet.window.key.symbol_string(key)] = True
             self.modifiers = modifiers
             self.pressing = True
-            self.update_text(0)
-            self.schedule(self.check_holding)
+            self.update_text()
 
-        def check_holding(self, dt):
-            if self.pressing and not self.holding:
-                self.held_time += dt
-                if self.held_time > 0.5:
-                    self.holding = True
-                    self.unschedule(self.check_holding)
-                    self.schedule_interval(self.update_text, 0.1)
-
-        def update_text(self, dt):
+        def update_text(self):
             """
             Takes each key and then checks the modifiers to determine whether it will be capital or lowercase, then
             adds it to the current attribute. If the key is
             :return:
             """
-            if not self.pressing or not self.holding:
+            if not self.pressing:
                 return
             for k in filter(lambda x: self.keys_pressed[x] is True, self.keys_pressed):
                 if k in string.ascii_letters:
@@ -83,13 +72,11 @@ class CharacterCreate(cs.scene.Scene):
                 if k == "BACKSPACE" and self.count != 0:
                     self.count -= 1
                     self.parent.name_in.element.text = self.parent.name_in.element.text[:-1]
-            self.held_time = 0
 
         def on_key_release(self, key, modifiers):
+            self.pressing = False
             self.keys_pressed[pyglet.window.key.symbol_string(key)] = False
             self.modifiers = None
-            self.holding = False
-            self.held_time = 0
 
     def __init__(self):
         super().__init__()
@@ -275,8 +262,6 @@ class MainMenu(cs.scene.Scene):
     def on_exit(self):
         super().on_exit()
         mixer.stop()
-        for child in self.get_children():
-            self.remove(child)
 
 
 if __name__ == "__main__":
