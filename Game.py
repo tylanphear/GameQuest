@@ -45,7 +45,6 @@ class MainMenu(cs.scene.Scene):
             seed(clock())
             super().__init__()
             self.window_size = director.get_window_size()
-            self.clouds = []
             self.num_clouds = num_clouds
             while len(self.children) < self.num_clouds:
                 self.make_cloud(inital_gen=True)
@@ -56,7 +55,6 @@ class MainMenu(cs.scene.Scene):
             """"
             Places a cloud in a random location, hopefully not intersecting any other clouds, and sends it rightwards.
             """
-
             def random_location(scatter):
                 """"
                 Helper function.
@@ -73,10 +71,9 @@ class MainMenu(cs.scene.Scene):
                            randint(cloud.height / 2 + self.window_size[1] / 2 - 100,
                                    self.window_size[1] - cloud.height / 2))
                 return pos
-
             cloud = cs.sprite.Sprite("assets/cloud.png")
             # If there's no other clouds, just place it
-            if len(self.clouds) == 0:
+            if len(self.children) == 0:
                 cloud.position = random_location(inital_gen)
             # This algorithm tries to place the cloud in its own location
             # without overlapping any clouds, but will give up if this is impossible.
@@ -86,34 +83,35 @@ class MainMenu(cs.scene.Scene):
                 # Try to place it so it doesn't intersect any other clouds
                 while not placed:
                     cloud.position = random_location(inital_gen)
-                    for c in self.clouds:
+                    for index, c in self.children:
                         # If we've failed to place the cloud too many times, just place it
-                        if fails > len(self.clouds):
+                        if fails > len(self.children):
                             placed = True
                             break
                         # If the cloud is in another cloud, we've failed again and we try another spot
-                        elif c.get_rect().intersects(cloud.get_rect()):
+                        elif c.get_rect().contains(*cloud.position):
                             placed = False
                             fails += 1
                             break
                         # Otherwise, so far so good, keep checking other clouds
                         placed = True
-            # 25 times (1.5 to 0.5) in the x direction
-            # -2 to 3 in the y direction
-            cloud.velocity = (25 * (random() * 0.5 + 0.5), -2 + 5 * random())
+            # 10 to 20 in the x direction
+            # -2.5 to 2.5 in the y direction
+            cloud.velocity = (20 * (random() * 0.5 + 0.5), -2.5 + 5 * random())
             # Move it to the right side of the window to the same y position as it started in
             cloud.do(Move(position=(self.window_size[0], cloud.position[1])))
             self.add(cloud)
 
         def update(self, dt):
             """"
-            Move the clouds, and generate new ones if any exitted the screen
+            Check if any of the clouds have left the screen, if so, remove them and generate a new one to replace it
             """
-            while len(self.children) < self.num_clouds:
-                self.make_cloud()
             for index, cloud in self.children:
-                if cloud.position[0] - cloud.width / 2 > self.window_size[0]:
+                # If the cloud is off the screen, remove it.
+                if cloud.position[0] - cloud.width / 2 > self.window_size[0] or \
+                                        cloud.position[1] - cloud.width / 2 > self.window_size[1]:
                     self.remove(cloud)
+                    self.make_cloud()
 
     def __init__(self):
         super().__init__()
@@ -125,7 +123,7 @@ class MainMenu(cs.scene.Scene):
         song = Audio("assets/menu.ogg")
         song.play(-1)
 
-        clouds = self.CloudLayer(30)
+        clouds = self.CloudLayer(35)
         self.add(clouds)
 
         label = cs.text.Label("Game Quest", font_name="Arial", font_size=30, anchor_x="center", anchor_y="center")
