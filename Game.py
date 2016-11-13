@@ -1,6 +1,7 @@
 from random import randint, random
 
 import cocos as cs
+import pyglet
 from cocos.actions import Move
 from cocos.audio.pygame import mixer
 from cocos.director import director
@@ -22,6 +23,7 @@ class MainMenu(cs.scene.Scene):
 
             self.font_item_selected['font_size'] = 25
             self.font_item_selected['color'] = (155, 0, 0, 255)
+            self.bg_vertices = []
 
             self.create_menu(options)
 
@@ -36,6 +38,7 @@ class MainMenu(cs.scene.Scene):
         """"
         The clouds behind the menu text.
         """
+
         def __init__(self, num_clouds):
             """"
             Places initial clouds.
@@ -55,6 +58,7 @@ class MainMenu(cs.scene.Scene):
             """"
             Places a cloud in a random location, hopefully not intersecting any other clouds, and sends it rightwards.
             """
+
             def random_location(scatter):
                 """"
                 Helper function.
@@ -71,6 +75,7 @@ class MainMenu(cs.scene.Scene):
                            randint(cloud.height / 2 + self.window_size[1] / 2 - 100,
                                    self.window_size[1] - cloud.height / 2))
                 return pos
+
             cloud = cs.sprite.Sprite("assets/cloud.png")
             # If there's no other clouds, just place it
             if len(self.children) == 0:
@@ -140,8 +145,9 @@ class MainMenu(cs.scene.Scene):
 
 
 if __name__ == "__main__":
+    # Create the window
+    pyglet.clock.set_fps_limit(60)
     director.init(caption="Game Quest", width=600, height=480)
-    director.show_FPS = True
     mixer.init()
     main_menu = MainMenu()
     director.run(main_menu)
