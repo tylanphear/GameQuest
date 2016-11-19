@@ -2,7 +2,7 @@ from random import randint, random
 
 import cocos as cs
 import pyglet
-from cocos.actions import Move
+from cocos.actions import Move, CallFunc, Delay
 from cocos.audio.pygame import mixer
 from cocos.director import director
 from cocos.menu import MenuItem
@@ -29,7 +29,8 @@ class MainMenu(cs.scene.Scene):
 
         def new_game(self):
             new_game = NewGame()
-            director.replace(FadeTransition(new_game))
+            self.do(Delay(1) + CallFunc(lambda: director.replace(FadeTransition(new_game))))
+
 
         def on_quit(self):
             self.get_ancestor(cs.scene.Scene).end()
