@@ -1,19 +1,22 @@
 from random import randint, random
 
-import cocos as cs
 import pyglet
 from cocos.actions import Move, CallFunc, Delay
 from cocos.audio.pygame import mixer
 from cocos.director import director
-from cocos.menu import MenuItem
+from cocos.layer import Layer
+from cocos.menu import MenuItem, Menu
+from cocos.scene import Scene
 from cocos.scenes import FadeTransition
+from cocos.sprite import Sprite
+from cocos.text import Label
 
 from Audio import Audio
 from NewGame import NewGame
 
 
-class MainMenu(cs.scene.Scene):
-    class Menu(cs.menu.Menu):
+class MainMenu(Scene):
+    class Menu(Menu):
         def __init__(self):
             super().__init__()
             options = [MenuItem("New Game", self.new_game), MenuItem("Quit", self.on_quit)]
@@ -33,9 +36,9 @@ class MainMenu(cs.scene.Scene):
 
 
         def on_quit(self):
-            self.get_ancestor(cs.scene.Scene).end()
+            self.get_ancestor(Scene).end()
 
-    class CloudLayer(cs.layer.Layer):
+    class CloudLayer(Layer):
         """"
         The clouds behind the menu text.
         """
@@ -77,7 +80,7 @@ class MainMenu(cs.scene.Scene):
                                    self.window_size[1] - cloud.height / 2))
                 return pos
 
-            cloud = cs.sprite.Sprite("assets/cloud.png")
+            cloud = Sprite("assets/cloud.png")
             # If there's no other clouds, just place it
             if len(self.children) == 0:
                 cloud.position = random_location(inital_gen)
@@ -121,8 +124,8 @@ class MainMenu(cs.scene.Scene):
 
     def __init__(self):
         super().__init__()
-        self.window_size = cs.director.director.get_window_size()
-        bg = cs.sprite.Sprite("assets/menu_bg.png")
+        self.window_size = director.get_window_size()
+        bg = Sprite("assets/menu_bg.png")
         bg.position = self.window_size[0] / 2, self.window_size[1] / 2
         self.add(bg)
 
@@ -132,7 +135,7 @@ class MainMenu(cs.scene.Scene):
         clouds = self.CloudLayer(35)
         self.add(clouds)
 
-        label = cs.text.Label("Game Quest", font_name="Arial", font_size=30, anchor_x="center", anchor_y="center")
+        label = Label("Game Quest", font_name="Arial", font_size=30, anchor_x="center", anchor_y="center")
         label.element.color = (230, 50, 50, 255)
         label.position = self.window_size[0] / 2, self.window_size[1] - 100
         self.add(label)

@@ -17,9 +17,11 @@ class CharacterCreate(Scene):
     def __init__(self):
         super().__init__()
         self.window_size = director.get_window_size()
-        self.text = TextSequence((30, 30),
+        self.text = TextSequence(draw_speed="fast",
+                                 position=(30, 30),
                                  lines=["But no man starts out a hero.", "Everyone has to start off somewhere",
-                                        "Where do you choose to start?"])
+                                        "Where do you choose to start?"],
+                                 delay=3)
         self.add(self.text)
 
         guy = Sprite("assets/guy.png")
@@ -28,7 +30,7 @@ class CharacterCreate(Scene):
 
         self.fade_overlay = ColorLayer(255, 255, 255, 255)
         self.add(self.fade_overlay)
-        self.fade_overlay.do(Delay(0.5) + FadeOut(10))
+        self.fade_overlay.do(Delay(0.5) + FadeOut(10) + CallFunc(self.text.start))
 
 
 class NewGame(Scene):
@@ -37,11 +39,14 @@ class NewGame(Scene):
 
         def __init__(self):
             super().__init__()
-            self.text = TextSequence(lines=["A long time ago...", "There was a man.", "A manly man."])
+            window_width, window_height = director.get_window_size()
+            self.text = TextSequence(centered=True,
+                                     position=(window_width / 2, window_height / 2),
+                                     lines=["A long time ago...", "There was a man.", "A manly man."],
+                                     delay=2)
             self.text.message.element.color = (150, 230, 230, 255)
-            self.text.message.position = (self.text.position[0] + self.text.message.element.content_width / 2 + 10,
-                                          self.text.position[1] + self.text.message.element.content_height + 30)
             self.add(self.text)
+            self.text.start()
 
         def on_key_press(self, key, modifiers):
             if key == window.key.ENTER:
